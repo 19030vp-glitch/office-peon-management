@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
-import User from '@/models/User'; // Ensure User model is registered
-import { headers } from 'next/headers';
+import User from '@/models/User';
+import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 
-async function verifyAuth(req: Request) {
-    const token = (await headers()).get('cookie')?.split('token=')[1]?.split(';')[0];
+async function verifyAuth() {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
+
     if (!token) return null;
     try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
@@ -19,26 +21,28 @@ async function verifyAuth(req: Request) {
 
 export async function GET(req: Request) {
     await dbConnect();
-    const user = await verifyAuth(req);
+    const user = await verifyAuth();
     if (!user) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     try {
-        let query = {};
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get('status');
+
+        let query: any = {};
+
         if (user.role === 'employee') {
-            query = { employeeId: user.id };
-        } else if (user.role === 'peon') {
-            // Peons see pending and in-progress, or all for today?
-            // Let's return non-delivered for active view, strict filtering can be done in UI or separate param
-            const url = new URL(req.url);
-            const status = url.searchParams.get('status');
+            query.employeeId = user.id;
+        } else if (user.role === 'peon' || user.role === 'admin') {
+            // Default active view for peons/admins: show everything not delivered or cancelled
             if (status) {
-                query = { status };
+                query.status = status;
+            } else {
+                query.status = { $nin: ['delivered', 'cancelled'] };
             }
         }
 
-        // Sort by newest first
         const orders = await Order.find(query).sort({ orderedAt: -1 }).limit(100);
         return NextResponse.json(orders);
     } catch (error: any) {
@@ -48,18 +52,14 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     await dbConnect();
-    const user: any = await verifyAuth(req);
+    const user: any = await verifyAuth();
     if (!user) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     try {
-        const { items, note } = await req.json(); // items: [{ itemId, quantity, itemName }]
+        const { items, note } = await req.json();
 
-        // Fetch full user details for denormalization if needed, 
-        // but we can trust token info if it has name/dept. 
-        // Actually token only has id/role usually.
-        // Let's fetch user to get name/dept.
         const dbUser = await User.findById(user.id);
         if (!dbUser) {
             return NextResponse.json({ message: 'User not found' }, { status: 404 });

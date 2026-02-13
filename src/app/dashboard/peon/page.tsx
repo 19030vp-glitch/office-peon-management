@@ -31,8 +31,7 @@ export default function PeonDashboard() {
 
     const fetchOrders = async () => {
         try {
-            const res = await fetch('/api/orders?status=pending'); // Fetch pending/active
-            // Just fetching all via API logic which defaults to helpful list for peon
+            const res = await fetch('/api/orders'); // Fetch all active by default from API
             if (res.ok) {
                 const data = await res.json();
                 // Client side filter if API returns all
