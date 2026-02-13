@@ -60,10 +60,9 @@ export default function EmployeeDashboard() {
             const res = await fetch('/api/orders');
             if (res.ok) {
                 const data = await res.json();
-                // Filter for non-delivered and non-cancelled orders for dashboard view
                 const active = data.filter((o: Order) =>
                     o.status !== 'delivered' && o.status !== 'cancelled'
-                ).slice(0, 5); // Just show top 5 active
+                ).slice(0, 5);
                 setActiveOrders(active);
             }
         } catch (error) {
@@ -126,7 +125,7 @@ export default function EmployeeDashboard() {
         }
     };
 
-    const getStatusStyles = (status: string) => {
+    const getStatusBadge = (status: string) => {
         switch (status) {
             case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
             case 'accepted': return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -137,152 +136,163 @@ export default function EmployeeDashboard() {
     };
 
     return (
-        <div className="max-w-6xl mx-auto py-8 px-4">
-            <div className="flex justify-between items-center mb-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">How can we help today?</h1>
-                    <p className="text-gray-500 mt-1">Select items from the menu below to place your order.</p>
+                    <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Place Your Order</h1>
+                    <p className="text-gray-500 mt-2 font-medium">Select items from the menu and we'll bring them to your desk.</p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
                 {/* Menu Section */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-3 space-y-12">
                     {loading ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 animate-pulse">
-                            {[1, 2, 3, 4, 5, 6].map(n => (
-                                <div key={n} className="h-40 bg-gray-200 rounded-2xl"></div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+                                <div key={n} className="h-48 bg-gray-100 rounded-3xl animate-pulse"></div>
                             ))}
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {items.map((item) => (
                                 <button
                                     key={item._id}
                                     onClick={() => addToCart(item)}
                                     disabled={!item.available}
-                                    className={`group relative p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-white/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left flex flex-col justify-between h-48 ${!item.available ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                                    className={`group relative p-6 bg-white/90 backdrop-blur-md rounded-3xl shadow-lg border border-white/50 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 text-left flex flex-col justify-between h-52 outline-none focus:ring-4 focus:ring-blue-100 ${!item.available ? 'opacity-40 grayscale cursor-not-allowed' : ''}`}
                                 >
                                     <div className="flex justify-between items-start w-full">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-500">
                                             {item.name.toLowerCase().includes('tea') ? '🍵' :
                                                 item.name.toLowerCase().includes('coffee') ? '☕' :
                                                     item.name.toLowerCase().includes('water') ? '💧' : '🍰'}
                                         </div>
                                         {!item.available && (
-                                            <span className="px-2 py-0.5 bg-gray-900 text-white text-[10px] font-bold rounded-full uppercase">Sold Out</span>
+                                            <span className="px-3 py-1 bg-gray-900 text-white text-[10px] font-black rounded-full uppercase tracking-tighter">Sold Out</span>
                                         )}
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{item.name}</h3>
-                                        {item.price && <p className="text-blue-600 font-bold mt-1">₹{item.price}</p>}
+                                        <h3 className="text-xl font-black text-gray-900 group-hover:text-blue-600 transition-colors leading-tight">{item.name}</h3>
+                                        <p className="text-blue-600 font-black text-lg mt-1">
+                                            {item.price ? `₹${item.price}` : <span className="text-green-600">Free</span>}
+                                        </p>
                                     </div>
-                                    <div className="absolute right-4 bottom-4 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300 shadow-lg">
-                                        <span className="text-xl">+</span>
+                                    <div className="absolute right-6 bottom-6 w-10 h-10 bg-blue-600 text-white rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0 duration-500 shadow-xl shadow-blue-200">
+                                        <span className="text-2xl font-bold">+</span>
                                     </div>
                                 </button>
                             ))}
                             {items.length === 0 && (
-                                <div className="col-span-full py-20 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                                    <p className="text-gray-400">The menu is currently empty. Contact your admin.</p>
+                                <div className="col-span-full py-24 text-center bg-gray-100/50 backdrop-blur-sm rounded-[3rem] border-4 border-dashed border-gray-200/50">
+                                    <div className="text-6xl mb-4 opacity-10">🥡</div>
+                                    <h3 className="text-2xl font-black text-gray-900 mb-1">Our menu is resting</h3>
+                                    <p className="text-gray-400 font-medium">Check back soon for delicious treats.</p>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* Active Orders Horizontal Scroll / List */}
-                    <div className="pt-8 border-t border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                            <span className="mr-2">🕒</span> Active Tracking
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Active Tracking List */}
+                    <div className="pt-10 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-2xl font-black text-gray-900 flex items-center">
+                                <span className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mr-4 text-sm">🚚</span>
+                                Active Orders
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {activeOrders.map((order) => (
-                                <div key={order._id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div>
-                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusStyles(order.status)}`}>
-                                                {order.status}
-                                            </span>
-                                        </div>
-                                        <span className="text-[11px] text-gray-400 font-medium">
+                                <div key={order._id} className="bg-white/90 backdrop-blur-md p-6 rounded-[2rem] shadow-xl border border-white/50 hover:shadow-2xl transition-all duration-500 group">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${getStatusBadge(order.status)}`}>
+                                            {order.status}
+                                        </span>
+                                        <span className="text-[11px] text-gray-300 font-bold uppercase tracking-widest">
                                             {new Date(order.orderedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-2">
                                         {order.items.map((i, idx) => (
-                                            <p key={idx} className="text-sm text-gray-700 font-medium">
-                                                {i.quantity}x {i.itemName}
-                                            </p>
+                                            <div key={idx} className="flex justify-between items-center bg-gray-50/50 p-3 rounded-2xl">
+                                                <span className="font-bold text-gray-800">{i.itemName}</span>
+                                                <span className="bg-white px-2 py-0.5 rounded-lg border border-gray-100 text-xs font-black text-blue-600">×{i.quantity}</span>
+                                            </div>
                                         ))}
                                     </div>
-                                    {order.note && <p className="mt-2 text-[11px] text-gray-500 italic bg-gray-50 p-2 rounded-lg">"{order.note}"</p>}
+                                    {order.note && (
+                                        <div className="mt-4 text-[11px] text-gray-500 font-medium italic bg-orange-50/30 p-3 rounded-2xl border border-orange-50">
+                                            "{order.note}"
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {activeOrders.length === 0 && (
-                                <div className="col-span-full py-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                                    <p className="text-gray-400 text-sm">No active orders right now.</p>
+                                <div className="col-span-full py-16 text-center bg-gray-50/50 rounded-[2.5rem] border-2 border-dashed border-gray-200">
+                                    <p className="text-gray-400 font-bold tracking-tight">No active orders. Hungry yet?</p>
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                {/* Cart Section */}
+                {/* Glassmorphism Cart Section */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-white/50 p-6 sticky top-24 overflow-hidden">
-                        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
+                    <div className="bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 p-8 sticky top-24 overflow-hidden">
+                        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-48 h-48 bg-blue-50 rounded-full blur-3xl opacity-60"></div>
 
-                        <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center relative">
-                            <span className="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center mr-3 text-sm">🛒</span>
-                            Your Cart
+                        <h2 className="text-2xl font-black text-gray-900 mb-8 flex items-center relative">
+                            <span className="bg-blue-600 text-white w-10 h-10 rounded-2xl flex items-center justify-center mr-4 text-xs shadow-lg shadow-blue-100">🛒</span>
+                            Selection
                         </h2>
 
                         {cart.length === 0 ? (
-                            <div className="text-center py-16 px-4">
-                                <div className="text-5xl mb-4 grayscale opacity-20">🥡</div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">Your cart is empty</h3>
-                                <p className="text-sm text-gray-400">Select snacks from the menu to get started.</p>
+                            <div className="text-center py-20 px-4 relative">
+                                <div className="text-6xl mb-6 grayscale opacity-10">🍜</div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-1 tracking-tight">Cart is empty</h3>
+                                <p className="text-sm text-gray-400 font-medium">Select some treats to see them here.</p>
                             </div>
                         ) : (
-                            <div className="space-y-6 flex flex-col h-[calc(100vh-350px)]">
-                                <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+                            <div className="space-y-8 flex flex-col h-[calc(100vh-400px)] relative">
+                                <div className="flex-1 overflow-y-auto space-y-5 pr-2 custom-scrollbar">
                                     {cart.map((item) => (
-                                        <div key={item.itemId} className="flex items-center justify-between group">
-                                            <div className="flex-1">
-                                                <h4 className="font-bold text-gray-900 leading-tight">{item.itemName}</h4>
-                                                <p className="text-xs text-gray-500 mt-0.5">Quantity: {item.quantity}</p>
-                                            </div>
-                                            <div className="flex items-center space-x-2 bg-gray-50 p-1.5 rounded-xl border border-gray-100">
-                                                <button
-                                                    onClick={() => updateQuantity(item.itemId, -1)}
-                                                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 active:scale-90 transition-all font-bold"
-                                                >
-                                                    −
-                                                </button>
-                                                <span className="w-6 text-center text-sm font-bold text-gray-900">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => updateQuantity(item.itemId, 1)}
-                                                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 active:scale-90 transition-all font-bold"
-                                                >
-                                                    +
-                                                </button>
+                                        <div key={item.itemId} className="flex flex-col space-y-3 group">
+                                            <div className="flex justify-between items-start">
+                                                <h4 className="font-black text-gray-900 text-lg leading-tight flex-1">{item.itemName}</h4>
                                                 <button
                                                     onClick={() => removeFromCart(item.itemId)}
-                                                    className="ml-2 text-gray-400 hover:text-red-500 transition-colors p-1"
+                                                    className="ml-4 text-gray-300 hover:text-red-500 transition-colors"
                                                 >
                                                     🗑️
                                                 </button>
+                                            </div>
+                                            <div className="flex items-center justify-between bg-gray-50 p-2 rounded-2xl border border-gray-100">
+                                                <div className="flex items-center space-x-3">
+                                                    <button
+                                                        onClick={() => updateQuantity(item.itemId, -1)}
+                                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-white hover:border-blue-300 hover:text-blue-600 active:scale-90 transition-all font-black text-xl shadow-sm"
+                                                    >
+                                                        −
+                                                    </button>
+                                                    <span className="w-8 text-center text-lg font-black text-gray-900">{item.quantity}</span>
+                                                    <button
+                                                        onClick={() => updateQuantity(item.itemId, 1)}
+                                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-white hover:border-blue-300 hover:text-blue-600 active:scale-90 transition-all font-black text-xl shadow-sm"
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
-                                <div className="space-y-4 pt-6 border-t border-gray-100">
+                                <div className="space-y-6 pt-6 border-t border-gray-100">
                                     <div>
-                                        <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Special Instructions</label>
+                                        <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-1">Special Notes</label>
                                         <textarea
-                                            placeholder="Example: Less sugar, extra hot..."
-                                            className="w-full bg-gray-50 border-gray-200 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all resize-none h-24 text-gray-900 placeholder-gray-400"
+                                            placeholder="Eg: Extra hot, very sweet..."
+                                            className="w-full bg-gray-50 border-gray-100 rounded-[2rem] p-5 text-sm font-medium focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all resize-none h-32 text-gray-900 placeholder-gray-300"
                                             value={note}
                                             onChange={(e) => setNote(e.target.value)}
                                         />
@@ -291,15 +301,14 @@ export default function EmployeeDashboard() {
                                     <button
                                         onClick={placeOrder}
                                         disabled={placingOrder}
-                                        className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-blue-100 transform active:scale-[0.98] transition-all flex items-center justify-center ${placingOrder ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                        className={`w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black py-5 px-8 rounded-[2rem] shadow-2xl shadow-blue-200 transform active:scale-[0.97] transition-all flex items-center justify-center uppercase tracking-widest text-xs h-16 ${placingOrder ? 'opacity-70 cursor-not-allowed' : ''}`}
                                     >
                                         {placingOrder ? (
-                                            <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                        ) : null}
-                                        {placingOrder ? 'Placing Order...' : 'Confirm Order'}
+                                            <div className="flex items-center">
+                                                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                                                Processing...
+                                            </div>
+                                        ) : 'Send to Kitchen'}
                                     </button>
                                 </div>
                             </div>
@@ -307,6 +316,19 @@ export default function EmployeeDashboard() {
                     </div>
                 </div>
             </div>
+
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #e2e8f0;
+                    border-radius: 10px;
+                }
+            `}</style>
         </div>
     );
 }
